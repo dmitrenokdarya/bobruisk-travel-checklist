@@ -93,9 +93,10 @@ const CheckList = () => {
             Пора начать наше путешествие!
           </h1>
           <p className="text-subtitle-l text-white">
-            Бобры, крепость, старый город и немного мемной магии.
+            Бобры, крепости, Социалка и еще немного бобров.
             <br />
-            Бобруйск — это неожиданно, колоритно и очень душевно.
+            Бобруйск — это неожиданно, колоритно и очень душевно со слов чата
+            gpt. Наверное, стоит проверить.
           </p>
 
           <div className="mt-8 bg-white/20 rounded-full h-2 overflow-hidden">
@@ -114,10 +115,7 @@ const CheckList = () => {
       </div>
 
       <div className="pt-5 pb-10 px-7 mx-auto">
-        <div className="flex flex-col justify-center items-end gap-3 mb-15">
-          <p className="text-subtitle-l text-secondary mx-auto">
-            🗺️ Ваш маршрут по Бобруйску
-          </p>
+        <div className="flex flex-col justify-center items-end gap-5 mb-10">
           <label className="flex items-center gap-2 cursor-pointer">
             <div className="relative">
               <input
@@ -139,8 +137,11 @@ const CheckList = () => {
                 )}
               </div>
             </div>
-            <span className="text-body-xs text-secondary">Автоскролл</span>
+            <span className="text-body-s text-secondary">Автоскролл</span>
           </label>
+          <p className="text-h2 text-secondary mx-auto p-2 bg-blue rounded-lg">
+            🗺️ Ваш маршрут по Бобруйску:
+          </p>
         </div>
 
         <div className="relative">
@@ -275,9 +276,20 @@ const CheckList = () => {
               🎉 Путешествие завершено! 🎉
             </p>
             <p className="text-body-s text-secondary">
-              Вы посетили все самые интересные на мой взгляд
-              достопримечательности Бобруйска! Отличная работа!
+              Надеюсь, что у тебя остались самые приятные впечатления об этом
+              небольшом городке! Спасибо, что посетил его! Всем бобра!
             </p>
+            <div className='flex justify-between items-end mt-3'>
+              <div className="w-fit">
+                <Image
+                  src="/images/logo.png"
+                  alt="logo"
+                  width={50}
+                  height={50}
+                />
+              </div>
+              <p className="text-end">от Самуиловича</p>
+            </div>
           </div>
         )}
       </div>
