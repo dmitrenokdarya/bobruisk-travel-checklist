@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { BOBRUISK_INFO } from './constants';
 import { Check, Triangle } from 'lucide-react';
+import Link from 'next/link';
 
 const CheckList = () => {
   const loadSavedProgress = () => {
@@ -80,7 +81,7 @@ const CheckList = () => {
 
   return (
     <div>
-      <div className="pt-7 pb-15 px-7 relative min-h-[500px] flex items-center">
+      <div className="pt-7 pb-15 px-7 relative min-h-[600px] flex items-center">
         <Image
           src="/images/main-page-photo.webp"
           alt="main photo"
@@ -142,6 +143,7 @@ const CheckList = () => {
           <p className="text-h2 text-secondary mx-auto p-2 bg-blue rounded-lg">
             🗺️ Ваш маршрут по Бобруйску:
           </p>
+          <Link href="https://yandex.ru/maps?rtext=53.137939,29.195350~53.139008,29.208460~53.139360,29.221461~53.139439,29.225713~53.138305,29.226189~53.130881,29.228323~53.130124,29.229816~53.136716,29.229112~53.136429,29.249371~53.144709,29.251114~53.142961,29.236567~53.153033,29.247934~53.147586,29.232769~53.148705,29.229062~53.145831,29.224959~53.142619,29.224335~53.142625,29.222417~53.140694,29.221836~53.142078,29.218856~53.137939,29.195350&rtt=pd" className='text-link text-subtitle-s mx-auto border border-stroke p-3 rounded-lg'>Ссылка на маршрут в Яндекс.Карты</Link>
         </div>
 
         <div className="relative">
@@ -279,7 +281,7 @@ const CheckList = () => {
               Надеюсь, что у тебя остались самые приятные впечатления об этом
               небольшом городке! Спасибо, что посетил его! Всем бобра!
             </p>
-            <div className='flex justify-between items-end mt-3'>
+            <div className="flex justify-between items-end mt-3">
               <div className="w-fit">
                 <Image
                   src="/images/logo.png"
