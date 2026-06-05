@@ -1,22 +1,86 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { BOBRUISK_INFO } from './constants';
+import { Check, Triangle } from 'lucide-react';
 
 const CheckList = () => {
-  const [openItems, setOpenItems] = useState(new Array(BOBRUISK_INFO.length).fill(false));
-  
+  const loadSavedProgress = () => {
+    if (typeof window === 'undefined') return null;
+    const saved = localStorage.getItem('bobruisk-checklist');
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        return {
+          checkedItems:
+            data.checkedItems || new Array(BOBRUISK_INFO.length).fill(false),
+          openItems:
+            data.openItems || new Array(BOBRUISK_INFO.length).fill(false),
+        };
+      } catch (e) {
+        console.error('Failed to load saved progress', e);
+      }
+    }
+    return null;
+  };
+
+  const savedProgress = loadSavedProgress();
+
+  const [openItems, setOpenItems] = useState(
+    savedProgress?.openItems || new Array(BOBRUISK_INFO.length).fill(false),
+  );
+  const [checkedItems, setCheckedItems] = useState(
+    savedProgress?.checkedItems || new Array(BOBRUISK_INFO.length).fill(false),
+  );
+  const [autoScroll, setAutoScroll] = useState(true);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        'bobruisk-checklist',
+        JSON.stringify({
+          checkedItems,
+          openItems,
+        }),
+      );
+      console.log('Saved to localStorage:', { checkedItems, openItems });
+    }
+  }, [checkedItems, openItems]);
+
   const toggleItem = (index: number) => {
-    setOpenItems(prev => {
+    setOpenItems((prev: boolean[]) => {
       const newState = [...prev];
       newState[index] = !newState[index];
       return newState;
     });
   };
-  
+
+  const handleCheck = (index: number) => {
+    setCheckedItems((prev: boolean[]) => {
+      const newState = [...prev];
+      newState[index] = !newState[index];
+
+      if (newState[index] && autoScroll && index + 1 < BOBRUISK_INFO.length) {
+        setTimeout(() => {
+          itemRefs.current[index + 1]?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }, 500);
+      }
+
+      return newState;
+    });
+  };
+
+  const completedCount = checkedItems.filter(Boolean).length;
+  const totalCount = BOBRUISK_INFO.length;
+  const progress = (completedCount / totalCount) * 100;
+
   return (
     <div>
-      <div className="pt-7 pb-25 px-7 relative">
+      <div className="pt-7 pb-15 px-7 relative min-h-[500px] flex items-center">
         <Image
           src="/images/main-page-photo.webp"
           alt="main photo"
@@ -24,49 +88,198 @@ const CheckList = () => {
           className="object-cover -z-10"
           priority
         />
-        <div className="relative z-10">
-          <h1 className="text-h1 mb-6 text-white">Пора начать наше путешествие!</h1>
+        <div className="relative z-10 max-w-2xl mx-auto text-center">
+          <h1 className="text-h1 mb-6 text-white">
+            Пора начать наше путешествие!
+          </h1>
           <p className="text-subtitle-l text-white">
             Бобры, крепость, старый город и немного мемной магии.
             <br />
             Бобруйск — это неожиданно, колоритно и очень душевно.
           </p>
+
+          <div className="mt-8 bg-white/20 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-brand-primary h-full transition-all duration-500 rounded-full"
+              style={{
+                width: `${progress}%`,
+                backgroundColor: '#9acee6',
+              }}
+            />
+          </div>
+          <p className="text-white mt-2 text-body-s">
+            Посещено: {completedCount} из {totalCount} мест
+          </p>
         </div>
       </div>
-      
-      <div className="pt-7 pb-10 px-7">
-        <p className="text-subtitle-s text-secondary mb-6">
-          Перед вами карта главных мест. Бывали? Ставьте галочку. Не были? Самое
-          время запланировать визит.
-        </p>
-        
-        <div className="space-y-4">
+
+      <div className="pt-5 pb-10 px-7 mx-auto">
+        <div className="flex flex-col justify-center items-end gap-3 mb-15">
+          <p className="text-subtitle-l text-secondary mx-auto">
+            🗺️ Ваш маршрут по Бобруйску
+          </p>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <div className="relative">
+              <input
+                type="checkbox"
+                checked={autoScroll}
+                onChange={() => setAutoScroll(!autoScroll)}
+                className="w-4 h-4 opacity-0 absolute cursor-pointer"
+              />
+              <div
+                className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+                ${
+                  autoScroll
+                    ? 'bg-brand-primary border-brand-primary'
+                    : 'border-stroke bg-transparent'
+                }`}
+              >
+                {autoScroll && (
+                  <Check size={10} color="white" strokeWidth={3} />
+                )}
+              </div>
+            </div>
+            <span className="text-body-xs text-secondary">Автоскролл</span>
+          </label>
+        </div>
+
+        <div className="relative">
+          <div className="absolute left-6 top-8 bottom-8 w-0.5 bg-gradient-to-b from-brand-primary via-brand-secondary to-brand-tertiary opacity-30" />
+
           {BOBRUISK_INFO.map((info, index) => {
             const isOpen = openItems[index];
-            
+            const isLast = index === BOBRUISK_INFO.length - 1;
+
             return (
-              <div key={index} className="border-stroke border rounded-lg p-4">
-                <div 
-                  className="flex justify-between items-start cursor-pointer"
-                  onClick={() => toggleItem(index)}
-                >
-                  <p className="text-h3 text-primary">{info.title}</p>
-                  <button className="text-brand-primary text-xl ml-4">
-                    {isOpen ? '▲' : '▼'}
-                  </button>
+              <div key={index} className="grid">
+                <div className="mb-4 mx-auto">
+                  <div
+                    className={`
+                      w-12 h-12 rounded-full flex items-center justify-center
+                      transition-all duration-300
+                      ${
+                        checkedItems[index]
+                          ? 'bg-blue shadow-lg shadow-brand-primary/50'
+                          : 'bg-secondary border-2 border-stroke'
+                      }
+                    `}
+                  >
+                    {checkedItems[index] ? (
+                      <span className="text-white text-subtitle-l">✓</span>
+                    ) : (
+                      <span className="text-primary text-subtitle-l">
+                        {index + 1}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                
-                <div 
-                  className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                    isOpen ? 'max-h-[1000px] opacity-100 mt-3' : 'max-h-0 opacity-0'
-                  }`}
+
+                <div
+                  ref={(el) => {
+                    itemRefs.current[index] = el;
+                  }}
                 >
-                  <p className="text-body-s text-secondary">{info.description}</p>
+                  <div
+                    className={`
+                      border rounded-lg p-4 transition-all duration-300
+                      ${
+                        checkedItems[index]
+                          ? 'border-muted bg-blue'
+                          : 'border-stroke bg-primary'
+                      }
+                    `}
+                  >
+                    <div className="flex flex-col gap-4 items-start">
+                      <div className="relative w-full h-50 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+                        {info.img && (
+                          <Image
+                            src={info.img}
+                            alt={info.title}
+                            fill
+                            className="object-cover"
+                          />
+                        )}
+                      </div>
+
+                      <div className="flex justify-between items-center w-full">
+                        <input
+                          type="checkbox"
+                          checked={checkedItems[index]}
+                          onChange={() => handleCheck(index)}
+                          className="hidden"
+                          id={`checkbox-${index}`}
+                        />
+                        <label
+                          htmlFor={`checkbox-${index}`}
+                          className={`w-7 h-7 rounded border-2 flex items-center justify-center cursor-pointer
+                          ${
+                            checkedItems[index]
+                              ? 'bg-brand-primary border-brand-primary'
+                              : 'border-stroke bg-transparent'
+                          }`}
+                        >
+                          {checkedItems[index] && (
+                            <Check size={16} color="white" />
+                          )}
+                        </label>
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-h3 text-primary max-w-57 text-right">
+                            {info.title}
+                          </h3>
+                          <button
+                            onClick={() => toggleItem(index)}
+                            className="text-brand-primary text-xl px-2"
+                          >
+                            {!isOpen ? (
+                              <Triangle
+                                size={18}
+                                color="white"
+                                className="rotate-180"
+                              />
+                            ) : (
+                              <Triangle size={18} color="gray" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                        isOpen
+                          ? 'max-h-[2000px] opacity-100 mt-4'
+                          : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <p className="text-body-s text-secondary leading-relaxed">
+                        {info.description}
+                      </p>
+                    </div>
+                  </div>
                 </div>
+
+                {!isLast && (
+                  <div className="flex justify-center -ml-10 -mt-4 -z-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/images/arrow.svg" alt="route arrow" />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+
+        {completedCount === totalCount && totalCount > 0 && (
+          <div className="text-center mt-12 p-6 bg-brand-primary/10 rounded-xl border border-brand-primary">
+            <p className="text-h3 text-brand-primary mb-2">
+              🎉 Путешествие завершено! 🎉
+            </p>
+            <p className="text-body-s text-secondary">
+              Вы посетили все самые интересные на мой взгляд
+              достопримечательности Бобруйска! Отличная работа!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
